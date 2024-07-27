@@ -58,7 +58,8 @@ def main():
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-    url = 'https://inmanga.com/ver/manga/Goblin-Slayer-Year-One/1/7d2722f2-ed53-4198-9d48-b98660ae860d'
+    url = print(input("Ingrese la url del manga: "))
+
 
     anime_name = extract_anime_name(url)
     anime_name_clean = "".join(char for char in anime_name if char.isalnum() or char.isspace()).replace(" ", "_")
