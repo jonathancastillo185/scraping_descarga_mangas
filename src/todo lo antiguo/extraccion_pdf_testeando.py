@@ -13,8 +13,9 @@ from fpdf import FPDF
 from PIL import Image
 from PyPDF2 import PdfWriter, PdfReader
 import shutil
+import tkinter as tk
+from tkinter import scrolledtext, messagebox, Checkbutton, BooleanVar, Entry, Label
 
-# Función para extraer el nombre del anime desde la URL
 def extract_anime_name(url):
     parts = url.split('/manga/')
     if len(parts) > 1:
@@ -66,7 +67,7 @@ def crear_pdf(ruta_guardado, lista_imagenes, anime_name, capitulo):
         if es_imagen_valida(image_path):
             convertir_a_jpeg(image_path)
             pdf.add_page()
-            pdf.image(image_path, 0, 0, 210, 297)  # Ajusta el tamaño según sea necesario
+            pdf.image(image_path, 0, 0, 210, 297)
         else:
             print(f'Imagen omitida debido a errores: {image_path}')
             os.remove(image_path)
@@ -75,13 +76,11 @@ def crear_pdf(ruta_guardado, lista_imagenes, anime_name, capitulo):
     pdf.output(pdf_path)
     print(f'PDF guardado en: {pdf_path}')
     
-    # Eliminar las imágenes después de crear el PDF
     for image_path in lista_imagenes:
         if os.path.exists(image_path):
             os.remove(image_path)
 
 def buscar_pdfs_en_directorios(base_path):
-    """Busca todos los archivos PDF en todos los subdirectorios dentro de base_path."""
     pdf_paths = []
     for root, dirs, files in os.walk(base_path):
         for file in files:
@@ -89,9 +88,19 @@ def buscar_pdfs_en_directorios(base_path):
                 pdf_paths.append(os.path.join(root, file))
     return pdf_paths
 
-def combinar_pdfs(ruta_pdfs_combinados, anime_name):
+def extraer_numero_capitulo(pdf_name):
+    import re
+    match = re.search(r'capitulo_(\d+(?:\.\d+)?)', pdf_name)
+    if match:
+        return float(match.group(1))
+    return None
+
+def combinar_pdfs(ruta_pdfs_combinados, anime_name, combinar=True):
+    if not combinar:
+        return
+
     pdfs = buscar_pdfs_en_directorios(ruta_pdfs_combinados)
-    pdfs.sort()  # Ordenar por nombre, asumiendo que los nombres incluyen números de capítulo
+    pdfs.sort(key=lambda x: extraer_numero_capitulo(os.path.basename(x)))
 
     if not pdfs:
         print("No se encontraron archivos PDF para combinar.")
@@ -99,12 +108,10 @@ def combinar_pdfs(ruta_pdfs_combinados, anime_name):
 
     writer = PdfWriter()
 
-    # Añadir los PDFs de capítulos
     for pdf_path in pdfs:
-        print(f'Leyendo PDF: {pdf_path}')  # Debug: Mostrar cada PDF que se está leyendo
+        print(f'Leyendo PDF: {pdf_path}')
         with open(pdf_path, 'rb') as f:
             reader = PdfReader(f)
-
             for page in reader.pages:
                 writer.add_page(page)
 
@@ -115,136 +122,110 @@ def combinar_pdfs(ruta_pdfs_combinados, anime_name):
 
     print(f'PDF combinado guardado en: {pdf_combined_path}')
 
-def mover_pdfs_a_carpeta(ruta_base):
+def mover_pdfs_a_carpeta(ruta_base, mover=True):
+    if not mover:
+        return ruta_base
+
     ruta_pdfs = os.path.join(ruta_base)
     ruta_pdfs_combinados = os.path.join(ruta_base, 'pdfs_combinados')
     os.makedirs(ruta_pdfs_combinados, exist_ok=True)
 
     pdfs = [f for f in os.listdir(ruta_pdfs) if f.endswith('.pdf')]
-    print(f'PDFs encontrados para mover: {pdfs}')  # Debug: Mostrar los PDFs encontrados
+    print(f'PDFs encontrados para mover: {pdfs}')
 
     for pdf in pdfs:
         pdf_path = os.path.join(ruta_pdfs, pdf)
-        print(f'Moviendo PDF: {pdf_path} a {ruta_pdfs_combinados}')  # Debug: Mostrar ruta de movimiento
+        print(f'Moviendo PDF: {pdf_path} a {ruta_pdfs_combinados}')
         shutil.move(pdf_path, os.path.join(ruta_pdfs_combinados, pdf))
 
     return ruta_pdfs_combinados
 
-def procesar_dataset(ruta_dataset, anime_name):
-    df = pd.read_csv(ruta_dataset)
-    for index, row in df.iterrows():
+def procesar_dataset(ruta_dataset, anime_name, descargar_imagenes=True, crear_pdfs=True):
+    dataset = pd.read_csv(ruta_dataset)
+
+    for _, row in dataset.iterrows():
         capitulo = row['capitulo']
         paginas = ast.literal_eval(row['paginas'])
+        ruta_capitulo = os.path.join('MANGAS', anime_name, f'capitulo_{capitulo}')
         
-        ruta_capitulo = os.path.join("mangas", anime_name, f'capitulo_{capitulo}')
-        ruta_pdf = os.path.join("mangas", anime_name)
-        os.makedirs(ruta_capitulo, exist_ok=True)
+        if descargar_imagenes:
+            for i, pagina in enumerate(paginas):
+                url_imagen = pagina['imagen']
+                print(f'Descargando imagen {i+1}/{len(paginas)} para el capítulo {capitulo}: {url_imagen}')
+                ruta_imagen = descargar_imagen(ruta_capitulo, url_imagen, i+1)
         
-        numero_imagen = 1
-        lista_imagenes = []
-        for url in paginas:
-            image_path = descargar_imagen(ruta_capitulo, url, numero_imagen)
-            if image_path:
-                lista_imagenes.append(image_path)
-            numero_imagen += 1
-        
-        if lista_imagenes:
-            crear_pdf(ruta_pdf, lista_imagenes, anime_name, capitulo)
+        if crear_pdfs:
+            lista_imagenes = [os.path.join(ruta_capitulo, f'{i+1}.jpg') for i in range(len(paginas))]
+            crear_pdf(ruta_capitulo, lista_imagenes, anime_name, capitulo)
 
-def procesar_url(url):
+def procesar_url(url_manga, descargar_imagenes, crear_pdfs, mover_pdfs, combinar_pdfs_flag):
     chrome_options = Options()
+    chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
 
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
-    anime_name = extract_anime_name(url)
+    anime_name = extract_anime_name(url_manga)
+    ruta_base = os.path.join('MANGAS', anime_name)
+    ruta_dataset = os.path.join(ruta_base, 'dataset.csv')
+    procesar_dataset(ruta_dataset, anime_name, descargar_imagenes, crear_pdfs)
 
-    driver.get(url)
+    if mover_pdfs:
+        ruta_pdfs_combinados = mover_pdfs_a_carpeta(ruta_base)
+    else:
+        ruta_pdfs_combinados = ruta_base
 
-    try:
-        select_element = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, '//*[@id="ChapList"]'))
-        )
+    if combinar_pdfs_flag:
+        combinar_pdfs(ruta_pdfs_combinados, anime_name)
 
-        options = select_element.find_elements(By.TAG_NAME, 'option')
+def ejecutar_proceso():
+    urls_text = text_area.get("1.0", tk.END).strip()
+    urls_manga = urls_text.split('\n')
 
-        cod = []
-        capitulo = []
+    descargar_imagenes = var_descargar_imagenes.get()
+    crear_pdfs = var_crear_pdfs.get()
+    mover_pdfs = var_mover_pdfs.get()
+    combinar_pdfs_flag = var_combinar_pdfs.get()
 
-        for option in options:
-            cod.append(option.get_attribute('value'))
-            capitulo.append(option.text)
-
-        capitulos_complt = {"capitulo": [], "paginas": []}
-
-        for x, i in zip(capitulo, cod):
-            driver.get(extract_segmento_url(url, x, i))
-
+    for url in urls_manga:
+        if url:
             try:
-                select_element = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located((By.XPATH, '//*[@id="PageList"]'))
-                )
-
-                options = select_element.find_elements(By.TAG_NAME, 'option')
-
-                pagina = [opt.text for opt in options]
-
-                boton_next = WebDriverWait(driver, 10).until(
-                    EC.element_to_be_clickable((By.XPATH, '/html/body/div/section/div/div/div[2]/div[1]/div/div/div[5]/div/button[2]'))
-                )
-
-                for _ in range(len(pagina) - 1):
-                    boton_next.click()
-
-                url_paginas = []
-
-                for idx in range(1, len(pagina) + 1):
-                    try:
-                        src_pag = WebDriverWait(driver, 10).until(
-                            EC.presence_of_element_located((By.XPATH, f'/html/body/div/section/div/div/div[2]/div[2]/div[1]/a[{idx}]'))
-                        )
-
-                        img_element = src_pag.find_element(By.TAG_NAME, 'img')
-                        src = img_element.get_attribute('src')
-
-                        url_paginas.append(src)
-                    except Exception as e:
-                        print(f"Error al procesar el elemento {idx}: {e}")
-
-                capitulos_complt["capitulo"].append(x)
-                capitulos_complt["paginas"].append(url_paginas)
-
+                procesar_url(url, descargar_imagenes, crear_pdfs, mover_pdfs, combinar_pdfs_flag)
+                messagebox.showinfo("Proceso completado", f"Proceso completado para la URL: {url}")
             except Exception as e:
-                print(f"Error al procesar la página {x}/{i}: {e}")
+                messagebox.showerror("Error", f"Error al procesar la URL: {url}\n{str(e)}")
 
-    finally:
-        driver.quit()
+root = tk.Tk()
+root.title("Procesador de Manga")
+root.geometry("600x600")
 
-    df = pd.DataFrame(capitulos_complt)
-    df.insert(0, 'anime', anime_name)
+label = tk.Label(root, text="Ingrese las URLs de los mangas (una por línea):")
+label.pack(pady=10)
 
-    base_path = os.path.join(os.getcwd(), "mangas", anime_name, "dataset")
-    base_path_pdf_completo = os.path.join(os.getcwd(), "mangas", anime_name)
-    os.makedirs(base_path, exist_ok=True)
+text_area = scrolledtext.ScrolledText(root, width=70, height=10)
+text_area.pack(pady=10)
 
-    csv_path = os.path.join(base_path, "capitulos_completos.csv")
-    df.to_csv(csv_path, index=False)
-    print(f"Archivo CSV guardado en: {csv_path}")
+frame = tk.Frame(root)
+frame.pack(pady=10)
 
-    procesar_dataset(csv_path, anime_name)
+var_descargar_imagenes = BooleanVar()
+check_descargar_imagenes = Checkbutton(frame, text="Descargar Imágenes", variable=var_descargar_imagenes)
+check_descargar_imagenes.grid(row=0, column=0, padx=5, pady=5)
 
-    # Mover los PDFs generados y combinarlos
-    ruta_pdfs_combinados = mover_pdfs_a_carpeta(base_path)
-    combinar_pdfs(base_path_pdf_completo, anime_name)
+var_crear_pdfs = BooleanVar()
+check_crear_pdfs = Checkbutton(frame, text="Crear PDFs", variable=var_crear_pdfs)
+check_crear_pdfs.grid(row=0, column=1, padx=5, pady=5)
 
-def main():
-    urls = [
-        'https://inmanga.com/ver/manga/Attack-on-avengers/1/f64a5079-d232-413f-ba50-9f25ab215601'
-    ]
-    
-    for url in urls:
-        procesar_url(url)
+var_mover_pdfs = BooleanVar()
+check_mover_pdfs = Checkbutton(frame, text="Mover PDFs a Carpeta", variable=var_mover_pdfs)
+check_mover_pdfs.grid(row=1, column=0, padx=5, pady=5)
 
-if __name__ == "__main__":
-    main()
+var_combinar_pdfs = BooleanVar()
+check_combinar_pdfs = Checkbutton(frame, text="Combinar PDFs", variable=var_combinar_pdfs)
+check_combinar_pdfs.grid(row=1, column=1, padx=5, pady=5)
+
+button = tk.Button(root, text="Ejecutar", command=ejecutar_proceso)
+button.pack(pady=20)
+
+root.mainloop()
