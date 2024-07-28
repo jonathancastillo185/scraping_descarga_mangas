@@ -1,0 +1,49 @@
+2024-07-28 19:46:05,554 - INFO - ====== WebDriver manager ======
+2024-07-28 19:46:06,185 - INFO - Get LATEST chromedriver version for google-chrome
+2024-07-28 19:46:06,239 - INFO - Get LATEST chromedriver version for google-chrome
+2024-07-28 19:46:06,291 - INFO - Driver [C:\Users\jonat\.wdm\drivers\chromedriver\win64\127.0.6533.72\chromedriver-win32/chromedriver.exe] found in cache
+2024-07-28 19:46:14,939 - INFO - Archivo CSV guardado en: D:\todo relacionado a mangas\script_descarga\mangas\Canaan\dataset\capitulos_completos.csv
+2024-07-28 19:46:17,127 - INFO - PDF guardado en: mangas\Canaan\Canaan_capitulo_0.pdf
+2024-07-28 19:46:17,127 - INFO - PDFs encontrados para mover: []
+2024-07-28 19:46:17,129 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Canaan\Canaan_capitulo_0.pdf
+2024-07-28 19:46:21,311 - INFO - ====== WebDriver manager ======
+2024-07-28 19:46:21,968 - INFO - Get LATEST chromedriver version for google-chrome
+2024-07-28 19:46:22,028 - INFO - Get LATEST chromedriver version for google-chrome
+2024-07-28 19:46:22,086 - INFO - Driver [C:\Users\jonat\.wdm\drivers\chromedriver\win64\127.0.6533.72\chromedriver-win32/chromedriver.exe] found in cache
+2024-07-28 19:46:31,817 - INFO - Archivo CSV guardado en: D:\todo relacionado a mangas\script_descarga\mangas\Boukyaku No Shirushi To Hime\dataset\capitulos_completos.csv
+2024-07-28 19:46:41,661 - INFO - PDF guardado en: mangas\Boukyaku No Shirushi To Hime\Boukyaku_No_Shirushi_To_Hime_capitulo_0.pdf
+2024-07-28 19:46:41,662 - INFO - PDFs encontrados para mover: []
+2024-07-28 19:46:41,663 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Boukyaku No Shirushi To Hime\Boukyaku_No_Shirushi_To_Hime_capitulo_0.pdf
+2024-07-28 19:46:45,760 - INFO - ====== WebDriver manager ======
+2024-07-28 19:46:46,380 - INFO - Get LATEST chromedriver version for google-chrome
+2024-07-28 19:46:46,440 - INFO - Get LATEST chromedriver version for google-chrome
+2024-07-28 19:46:46,505 - INFO - Driver [C:\Users\jonat\.wdm\drivers\chromedriver\win64\127.0.6533.72\chromedriver-win32/chromedriver.exe] found in cache
+2024-07-28 19:46:53,485 - INFO - Archivo CSV guardado en: D:\todo relacionado a mangas\script_descarga\mangas\Boku No Hero Academia Origin\dataset\capitulos_completos.csv
+2024-07-28 19:46:56,298 - INFO - PDF guardado en: mangas\Boku No Hero Academia Origin\Boku_No_Hero_Academia_Origin_capitulo_1.pdf
+2024-07-28 19:46:56,299 - INFO - PDFs encontrados para mover: []
+2024-07-28 19:46:56,299 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Boku No Hero Academia Origin\Boku_No_Hero_Academia_Origin_capitulo_1.pdf
+2024-07-28 19:47:00,457 - INFO - ====== WebDriver manager ======
+2024-07-28 19:47:01,073 - INFO - Get LATEST chromedriver version for google-chrome
+2024-07-28 19:47:01,131 - INFO - Get LATEST chromedriver version for google-chrome
+2024-07-28 19:47:01,184 - INFO - Driver [C:\Users\jonat\.wdm\drivers\chromedriver\win64\127.0.6533.72\chromedriver-win32/chromedriver.exe] found in cache
+2024-07-28 19:47:11,365 - INFO - Archivo CSV guardado en: D:\todo relacionado a mangas\script_descarga\mangas\Angels Adolescence\dataset\capitulos_completos.csv
+2024-07-28 19:47:20,814 - INFO - PDF guardado en: mangas\Angels Adolescence\Angels_Adolescence_capitulo_1.pdf
+2024-07-28 19:47:20,815 - INFO - PDFs encontrados para mover: []
+2024-07-28 19:47:20,816 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Angels Adolescence\Angels_Adolescence_capitulo_1.pdf
+2024-07-28 19:47:49,232 - INFO - PDF guardado en: mangas\Canaan\Canaan_capitulo_0.pdf
+2024-07-28 19:47:49,233 - INFO - PDFs encontrados para mover: []
+2024-07-28 19:47:49,233 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Canaan\Canaan_capitulo_0.pdf
+2024-07-28 19:47:49,335 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Canaan\Canaan_todos_los_capitulos.pdf
+2024-07-28 19:47:59,676 - INFO - PDF guardado en: mangas\Boukyaku No Shirushi To Hime\Boukyaku_No_Shirushi_To_Hime_capitulo_0.pdf
+2024-07-28 19:47:59,677 - INFO - PDFs encontrados para mover: []
+2024-07-28 19:47:59,678 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Boukyaku No Shirushi To Hime\Boukyaku_No_Shirushi_To_Hime_capitulo_0.pdf
+2024-07-28 19:47:59,705 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Boukyaku No Shirushi To Hime\Boukyaku_No_Shirushi_To_Hime_todos_los_capitulos.pdf
+2024-07-28 19:48:02,206 - INFO - PDF guardado en: mangas\Boku No Hero Academia Origin\Boku_No_Hero_Academia_Origin_capitulo_1.pdf
+2024-07-28 19:48:02,207 - INFO - PDFs encontrados para mover: []
+2024-07-28 19:48:02,207 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Boku No Hero Academia Origin\Boku_No_Hero_Academia_Origin_capitulo_1.pdf
+2024-07-28 19:48:02,284 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Boku No Hero Academia Origin\Boku_No_Hero_Academia_Origin_todos_los_capitulos.pdf
+2024-07-28 19:48:11,645 - INFO - PDF guardado en: mangas\Angels Adolescence\Angels_Adolescence_capitulo_1.pdf
+2024-07-28 19:48:11,646 - INFO - PDFs encontrados para mover: []
+2024-07-28 19:48:11,647 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Angels Adolescence\Angels_Adolescence_capitulo_1.pdf
+2024-07-28 19:48:11,671 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Angels Adolescence\Angels_Adolescence_todos_los_capitulos.pdf
+2024-07-28 19:48:11,954 - INFO - PDF combinado guardado en: D:\todo relacionado a mangas\script_descarga\mangas\Angels Adolescence\Angels_Adolescence_todos_los_capitulos.pdf
