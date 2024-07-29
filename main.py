@@ -184,6 +184,8 @@ def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=Fal
     os.makedirs(base_path, exist_ok=True)
     os.makedirs(base_path_pdf_completo, exist_ok=True)
 
+    driver = None  # Inicializar driver con None
+
     if crear_dataset:
         chrome_options = Options()
         chrome_options.add_argument("--no-sandbox")
@@ -214,23 +216,48 @@ def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=Fal
 
                 try:
                     select_element = WebDriverWait(driver, 10).until(
-                        EC.presence_of_element_located((By.XPATH, '//*[@id="content"]/div[1]'))
+                        EC.presence_of_element_located((By.XPATH, '//*[@id="PageList"]'))
                     )
-                    
-                    div_images = select_element.find_elements(By.TAG_NAME, 'img')
-                    imagenes = [img.get_attribute('src') for img in div_images]
+
+                    options = select_element.find_elements(By.TAG_NAME, 'option')
+
+                    pagina = [opt.text for opt in options]
+
+                    boton_next = WebDriverWait(driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, '/html/body/div/section/div/div/div[2]/div[1]/div/div/div[5]/div/button[2]'))
+                    )
+
+                    for _ in range(len(pagina) - 1):
+                        boton_next.click()
+
+                    url_paginas = []
+
+                    for idx in range(1, len(pagina) + 1):
+                        try:
+                            src_pag = WebDriverWait(driver, 10).until(
+                                EC.presence_of_element_located((By.XPATH, f'/html/body/div/section/div/div/div[2]/div[2]/div[1]/a[{idx}]'))
+                            )
+
+                            img_element = src_pag.find_element(By.TAG_NAME, 'img')
+                            src = img_element.getAttribute('src')
+
+                            url_paginas.append(src)
+                        except Exception as e:
+                            print(f"Error al procesar el elemento {idx}: {e}")
 
                     capitulos_complt["capitulo"].append(x)
-                    capitulos_complt["paginas"].append(str(imagenes))
-                except Exception as e:
-                    logging.error(f'Error al procesar capítulo {x}: {e}')
-                    
-        finally:
-            driver.quit()
+                    capitulos_complt["paginas"].append(url_paginas)
 
-        df = pd.DataFrame(capitulos_complt)
-        df.to_csv(csv_path, index=False)
-        logging.info(f'Dataset guardado en: {csv_path}')
+                except Exception as e:
+                    print(f"Error al procesar la página {x}/{i}: {e}")
+
+        finally:
+            if driver:
+                driver.quit()
+
+            df = pd.DataFrame(capitulos_complt)
+            df.to_csv(csv_path, index=False)
+            logging.info(f'Dataset guardado en: {csv_path}')
 
     if crear_pdfs:
         procesar_dataset(csv_path, anime_name, crear_pdfs, eliminar_imagenes)
@@ -239,9 +266,11 @@ def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=Fal
         ruta_pdfs_combinados = mover_pdfs_a_carpeta(base_path_pdf_completo)
         combinar_pdfs(ruta_pdfs_combinados, anime_name)
 
-def run_processes(url, crear_dataset_var, crear_pdfs_var, eliminar_imagenes_var, combinar_capitulos_var):
+
+def run_processes(urls, crear_dataset_var, crear_pdfs_var, eliminar_imagenes_var, combinar_capitulos_var):
     clean_last_log()
-    procesar_url(url, crear_dataset=crear_dataset_var, crear_pdfs=crear_pdfs_var, eliminar_imagenes=eliminar_imagenes_var, combinar_capitulos=combinar_capitulos_var)
+    for url in urls:
+        procesar_url(url, crear_dataset=crear_dataset_var, crear_pdfs=crear_pdfs_var, eliminar_imagenes=eliminar_imagenes_var, combinar_capitulos=combinar_capitulos_var)
     logging.info("Todos los animes han sido exportados correctamente.")
 
 def start_gui():
@@ -249,7 +278,7 @@ def start_gui():
     root.title("Manga Downloader")
 
     def on_start_button_click():
-        url = url_entry.get()
+        urls = url_text.get("1.0", tk.END).strip().split('\n')
         crear_dataset_var = var_crear_dataset.get()
         crear_pdfs_var = var_crear_pdfs.get()
         eliminar_imagenes_var = var_eliminar_imagenes.get()
@@ -260,11 +289,11 @@ def start_gui():
         
         # Ejecutar procesos en un hilo separado para no bloquear la interfaz
         import threading
-        threading.Thread(target=run_processes, args=(url, crear_dataset_var, crear_pdfs_var, eliminar_imagenes_var, combinar_capitulos_var)).start()
+        threading.Thread(target=run_processes, args=(urls, crear_dataset_var, crear_pdfs_var, eliminar_imagenes_var, combinar_capitulos_var)).start()
 
-    tk.Label(root, text="URL del Anime:").pack(pady=5)
-    url_entry = tk.Entry(root, width=50)
-    url_entry.pack(pady=5)
+    tk.Label(root, text="URLs del Anime (una por línea):").pack(pady=5)
+    url_text = scrolledtext.ScrolledText(root, width=60, height=15)
+    url_text.pack(pady=5)
 
     var_crear_dataset = tk.BooleanVar(value=True)
     var_crear_pdfs = tk.BooleanVar(value=True)
@@ -272,7 +301,7 @@ def start_gui():
     var_combinar_capitulos = tk.BooleanVar(value=True)
 
     tk.Checkbutton(root, text="Crear Dataset", variable=var_crear_dataset).pack(pady=5)
-    tk.Checkbutton(root, text="Crear PDF de cada capitulo", variable=var_crear_pdfs).pack(pady=5)
+    tk.Checkbutton(root, text="Crear PDFs", variable=var_crear_pdfs).pack(pady=5)
     tk.Checkbutton(root, text="Eliminar Imágenes", variable=var_eliminar_imagenes).pack(pady=5)
     tk.Checkbutton(root, text="Combinar Capítulos", variable=var_combinar_capitulos).pack(pady=5)
 
