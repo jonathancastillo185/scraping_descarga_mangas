@@ -11898,3 +11898,10 @@ Stacktrace:
 2024-07-29 17:57:34,004 - INFO - Get LATEST chromedriver version for google-chrome
 2024-07-29 17:57:34,101 - INFO - Get LATEST chromedriver version for google-chrome
 2024-07-29 17:57:34,156 - INFO - Driver [C:\Users\jonat\.wdm\drivers\chromedriver\win64\127.0.6533.72\chromedriver-win32/chromedriver.exe] found in cache
+2024-07-29 17:57:46,059 - INFO - Dataset guardado en: D:\todo relacionado a mangas\script_descarga\mangas\Bakuon Rettou\dataset\capitulos_completos.csv
+2024-07-29 17:58:00,365 - INFO - PDF guardado en: mangas\Bakuon Rettou\Bakuon_Rettou_capitulo_01.pdf
+2024-07-29 17:58:00,367 - INFO - PDFs encontrados para mover: ['Bakuon_Rettou_capitulo_01.pdf']
+2024-07-29 17:58:00,367 - INFO - Moviendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Bakuon Rettou\Bakuon_Rettou_capitulo_01.pdf a D:\todo relacionado a mangas\script_descarga\mangas\Bakuon Rettou\pdfs_combinados
+2024-07-29 17:58:00,369 - INFO - Leyendo PDF: D:\todo relacionado a mangas\script_descarga\mangas\Bakuon Rettou\pdfs_combinados\Bakuon_Rettou_capitulo_01.pdf
+2024-07-29 17:58:00,431 - INFO - PDF combinado guardado en: D:\todo relacionado a mangas\script_descarga\mangas\Bakuon Rettou\pdfs_combinados\Bakuon_Rettou_todos_los_capitulos.pdf
+2024-07-29 17:58:04,479 - INFO - Todos los animes han sido exportados correctamente.
