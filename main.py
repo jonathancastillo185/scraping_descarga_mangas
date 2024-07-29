@@ -91,7 +91,7 @@ def crear_pdf(ruta_guardado, lista_imagenes, anime_name, capitulo, eliminar_imag
         else:
             logging.warning(f'Imagen omitida debido a errores: {image_path}')
             os.remove(image_path)
-    if len(str(capitulo)) == 1:
+    if capitulo < 10:
         capitulo = f"0{capitulo}"
     pdf_name = f"{anime_name}_capitulo_{capitulo}.pdf".replace(" ", "_")
     pdf_path = os.path.join(ruta_guardado, pdf_name)
@@ -155,8 +155,9 @@ def mover_pdfs_a_carpeta(ruta_base):
 
     return ruta_pdfs_combinados
 
-def procesar_dataset(ruta_dataset, anime_name, crear_pdfs=True, eliminar_imagenes=False):
+def procesar_dataset(ruta_dataset, anime_name, crear_pdfs=True, eliminar_imagenes=False, descargar_imagenes=True):
     df = pd.read_csv(ruta_dataset)
+    
     for index, row in df.iterrows():
         capitulo = row['capitulo']
         paginas = ast.literal_eval(row['paginas'])
@@ -165,18 +166,24 @@ def procesar_dataset(ruta_dataset, anime_name, crear_pdfs=True, eliminar_imagene
         ruta_pdf = os.path.join("mangas", anime_name)
         os.makedirs(ruta_capitulo, exist_ok=True)
         
-        numero_imagen = 1
         lista_imagenes = []
-        for url in paginas:
-            image_path = descargar_imagen(ruta_capitulo, url, numero_imagen)
-            if image_path:
-                lista_imagenes.append(image_path)
-            numero_imagen += 1
-        
+
+        if descargar_imagenes:
+            numero_imagen = 1
+            for url in paginas:
+                image_path = descargar_imagen(ruta_capitulo, url, numero_imagen)
+                if image_path:
+                    lista_imagenes.append(image_path)
+                numero_imagen += 1
+        else:
+            # Si no se descargan imágenes, se asume que las imágenes ya están en la carpeta.
+            lista_imagenes = [os.path.join(ruta_capitulo, f) for f in os.listdir(ruta_capitulo) if f.endswith('.jpg') or f.endswith('.png')]
+
         if lista_imagenes and crear_pdfs:
             crear_pdf(ruta_pdf, lista_imagenes, anime_name, capitulo, eliminar_imagenes)
 
-def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=False, combinar_capitulos=True):
+
+def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=False, combinar_capitulos=True, var_descargar_imagenes = True):
     anime_name = extract_anime_name(url)
     base_path = os.path.join(os.getcwd(), "mangas", anime_name, "dataset")
     base_path_pdf_completo = os.path.join(os.getcwd(), "mangas", anime_name)
@@ -260,7 +267,7 @@ def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=Fal
         logging.info(f'Dataset guardado en: {csv_path}')
 
     if crear_pdfs:
-        procesar_dataset(csv_path, anime_name, crear_pdfs, eliminar_imagenes)
+        procesar_dataset(csv_path, anime_name, crear_pdfs, eliminar_imagenes, descargar_imagenes = var_descargar_imagenes)
     
     if combinar_capitulos:
         ruta_pdfs_combinados = mover_pdfs_a_carpeta(base_path_pdf_completo)
@@ -298,11 +305,14 @@ def start_gui():
     var_crear_pdfs = tk.BooleanVar(value=True)
     var_eliminar_imagenes = tk.BooleanVar(value=False)
     var_combinar_capitulos = tk.BooleanVar(value=True)
+    var_descargar_imagenes = tk.BooleanVar(value=True)
 
     tk.Checkbutton(root, text="Crear Dataset", variable=var_crear_dataset).pack(pady=5)
+    tk.Checkbutton(root, text="Descargar Imagenes", variable=var_descargar_imagenes).pack(pady=5)
     tk.Checkbutton(root, text="Crear PDFs", variable=var_crear_pdfs).pack(pady=5)
     tk.Checkbutton(root, text="Eliminar Imágenes", variable=var_eliminar_imagenes).pack(pady=5)
     tk.Checkbutton(root, text="Combinar Capítulos", variable=var_combinar_capitulos).pack(pady=5)
+
 
     start_button = tk.Button(root, text="Iniciar", command=on_start_button_click)
     start_button.pack(pady=10)
