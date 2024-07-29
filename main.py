@@ -87,10 +87,12 @@ def crear_pdf(ruta_guardado, lista_imagenes, anime_name, capitulo, eliminar_imag
         if es_imagen_valida(image_path):
             convertir_a_jpeg(image_path)
             pdf.add_page()
-            pdf.image(image_path, 0, 0, 210, 297)  # Ajusta el tamaño según sea necesario
+            pdf.image(image_path, 0, 0, 210, 297)  # Ajusta el tamaño según sea necesario pdf.image(image_path, 0, 0, 210, 297)
         else:
             logging.warning(f'Imagen omitida debido a errores: {image_path}')
             os.remove(image_path)
+    if len(str(capitulo)) == 1:
+        capitulo = f"0{capitulo}"
     pdf_name = f"{anime_name}_capitulo_{capitulo}.pdf".replace(" ", "_")
     pdf_path = os.path.join(ruta_guardado, pdf_name)
     pdf.output(pdf_path)
@@ -183,9 +185,7 @@ def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=Fal
     # Crear las rutas si no existen
     os.makedirs(base_path, exist_ok=True)
     os.makedirs(base_path_pdf_completo, exist_ok=True)
-
-    driver = None  # Inicializar driver con None
-
+    
     if crear_dataset:
         chrome_options = Options()
         chrome_options.add_argument("--no-sandbox")
@@ -239,7 +239,7 @@ def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=Fal
                             )
 
                             img_element = src_pag.find_element(By.TAG_NAME, 'img')
-                            src = img_element.getAttribute('src')
+                            src = img_element.get_attribute('src')
 
                             url_paginas.append(src)
                         except Exception as e:
@@ -252,12 +252,12 @@ def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=Fal
                     print(f"Error al procesar la página {x}/{i}: {e}")
 
         finally:
-            if driver:
-                driver.quit()
+            driver.quit()
 
-            df = pd.DataFrame(capitulos_complt)
-            df.to_csv(csv_path, index=False)
-            logging.info(f'Dataset guardado en: {csv_path}')
+
+        df = pd.DataFrame(capitulos_complt)
+        df.to_csv(csv_path, index=False)
+        logging.info(f'Dataset guardado en: {csv_path}')
 
     if crear_pdfs:
         procesar_dataset(csv_path, anime_name, crear_pdfs, eliminar_imagenes)
@@ -265,7 +265,6 @@ def procesar_url(url, crear_dataset=True, crear_pdfs=True, eliminar_imagenes=Fal
     if combinar_capitulos:
         ruta_pdfs_combinados = mover_pdfs_a_carpeta(base_path_pdf_completo)
         combinar_pdfs(ruta_pdfs_combinados, anime_name)
-
 
 def run_processes(urls, crear_dataset_var, crear_pdfs_var, eliminar_imagenes_var, combinar_capitulos_var):
     clean_last_log()
