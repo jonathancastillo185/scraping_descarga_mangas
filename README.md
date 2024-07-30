@@ -91,59 +91,76 @@ Puedes instalar las dependencias usando el siguiente comando:
 
 ```bash
 pip install -r requirements.txt
+```
 
-Instalación
+## Instalación
 
-    Clona este repositorio en tu máquina local:
+1. Clona este repositorio en tu máquina local:
 
-    bash
+    ```bash
+    git clone https://github.com/tu_usuario/tu_repositorio.git
+    ```
 
-git clone https://github.com/tu_usuario/tu_repositorio.git
+2. Navega al directorio del proyecto:
 
-Navega al directorio del proyecto:
+    ```bash
+    cd tu_repositorio
+    ```
 
-bash
+3. Instala las dependencias:
 
-cd tu_repositorio
-
-Instala las dependencias:
-
-bash
-
+    ```bash
     pip install -r requirements.txt
+    ```
 
-Uso
+## Uso
 
-    Configura las URLs de los capítulos de manga: Modifica el script para incluir las URLs de los capítulos que deseas descargar.
+1. **Configura las URLs de los capítulos de manga**: Modifica el script para incluir las URLs de los capítulos que deseas descargar.
 
-    Ejecuta el script:
+2. **Ejecuta el script**:
 
-    bash
-
+    ```bash
     python main.py
+    ```
 
-    Interfaz de usuario: Utiliza la interfaz gráfica proporcionada por Tkinter para gestionar las opciones de descarga y conversión.
+3. **Interfaz de usuario**: Utiliza la interfaz gráfica proporcionada por Tkinter para gestionar las opciones de descarga y conversión.
 
-Descripción del Código
+## Descripción del Código
 
-    main.py: Este es el script principal que gestiona la descarga de imágenes, conversión a PDF y combinación de archivos PDF. También contiene la lógica para la interfaz gráfica de usuario.
+- **main.py**: Este es el script principal que gestiona la descarga de imágenes, conversión a PDF y combinación de archivos PDF. También contiene la lógica para la interfaz gráfica de usuario.
 
-    utils.py: Incluye funciones auxiliares para la descarga de imágenes, conversión y combinación de PDFs.
+- **utils.py**: Incluye funciones auxiliares para la descarga de imágenes, conversión y combinación de PDFs.
 
-    gui.py: Contiene el código para la interfaz gráfica construida con Tkinter.
+- **gui.py**: Contiene el código para la interfaz gráfica construida con Tkinter.
 
-Ejemplos de Uso
+## Ejemplos de Uso
 
-    Descargar imágenes y convertir a PDF: Configura las URLs en el script y ejecuta main.py para iniciar el proceso.
+- **Descargar imágenes y convertir a PDF**: Configura las URLs en el script y ejecuta `main.py` para iniciar el proceso.
 
-    Combinar PDFs: Después de convertir los capítulos en PDF, el script los combinará en un solo archivo PDF.
+- **Combinar PDFs**: Después de convertir los capítulos en PDF, el script los combinará en un solo archivo PDF.
 
-Contribución
+## Contribución
 
 Si deseas contribuir a este proyecto, por favor sigue estos pasos:
 
-    Haz un fork del repositorio.
-    Crea una rama para tu característica o corrección de errores (git checkout -b feature/nueva-caracteristica).
-    Realiza tus cambios y haz commit de ellos (git commit -am 'Añadir nueva característica').
-    Empuja tu rama al repositorio (git push origin feature/nueva-caracteristica).
-    Crea un Pull Request en GitHub.
+1. Haz un fork del repositorio.
+2. Crea una rama para tu característica o corrección de errores:
+
+    ```bash
+    git checkout -b feature/nueva-caracteristica
+    ```
+
+3. Realiza tus cambios y haz commit de ellos:
+
+    ```bash
+    git commit -am 'Añadir nueva característica'
+    ```
+
+4. Empuja tu rama al repositorio:
+
+    ```bash
+    git push origin feature/nueva-caracteristica
+    ```
+
+5. Crea un Pull Request en GitHub.
+
