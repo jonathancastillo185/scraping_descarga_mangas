@@ -164,3 +164,8 @@ Si deseas contribuir a este proyecto, por favor sigue estos pasos:
 
 5. Crea un Pull Request en GitHub.
 
+
+Comando para creacion del .exe
+
+pyinstaller --onefile --add-data "requirements.txt;." --noconsole main.py
+
