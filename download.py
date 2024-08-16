@@ -2,7 +2,6 @@ import os
 import requests
 import pandas as pd
 import ast
-import logging
 from concurrent.futures import ThreadPoolExecutor
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -16,19 +15,9 @@ from PIL import Image
 from PyPDF2 import PdfWriter, PdfReader
 import shutil
 
-# Configuración de logging
-log_file = "app.log"
-logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 def clean_last_log():
     """Elimina el último archivo de log."""
-    if os.path.exists(log_file):
-        with open(log_file, 'r') as file:
-            lines = file.readlines()
-        
-        if lines:
-            with open(log_file, 'w') as file:
-                file.writelines(lines[:-1])  # Escribe el archivo sin la última línea
+    pass  # Esta función ya no es necesaria si no hay un archivo de log
 
 def file_exists(filepath):
     """Verifica si un archivo existe."""
@@ -59,10 +48,10 @@ def descargar_imagen(ruta_guardado, url_imagen, numero_imagen):
                 f.write(response.content)
             return image_path
         else:
-            logging.warning(f'Error al descargar la imagen. Tipo de contenido: {response.headers.get("content-type")}')
+            print(f'Error al descargar la imagen. Tipo de contenido: {response.headers.get("content-type")}')
             return None
     except requests.RequestException as e:
-        logging.error(f'Error al descargar la imagen: {e}')
+        print(f'Error al descargar la imagen: {e}')
         return None
 
 def descargar_imagen_async(url_imagen, ruta_guardado, numero_imagen):
@@ -74,7 +63,7 @@ def es_imagen_valida(image_path):
             img.verify()
         return True
     except (IOError, SyntaxError) as e:
-        logging.error(f'Archivo de imagen inválido o corrupto: {image_path}. Error: {e}')
+        print(f'Archivo de imagen inválido o corrupto: {image_path}. Error: {e}')
         return False
 
 def convertir_a_jpeg(image_path):
@@ -83,9 +72,9 @@ def convertir_a_jpeg(image_path):
             if img.format != 'JPEG':
                 rgb_im = img.convert('RGB')
                 rgb_im.save(image_path, 'JPEG', quality=100)
-                logging.info(f'Imagen convertida a JPEG: {image_path}')
+                print(f'Imagen convertida a JPEG: {image_path}')
     except Exception as e:
-        logging.error(f'Error al convertir la imagen: {image_path}. Error: {e}')
+        print(f'Error al convertir la imagen: {image_path}. Error: {e}')
 
 def crear_pdf(ruta_guardado, lista_imagenes, anime_name, capitulo, eliminar_imagenes=False):
     pdf = FPDF()
@@ -93,16 +82,16 @@ def crear_pdf(ruta_guardado, lista_imagenes, anime_name, capitulo, eliminar_imag
         if es_imagen_valida(image_path):
             convertir_a_jpeg(image_path)
             pdf.add_page()
-            pdf.image(image_path, 0, 0, 210, 297)  # Ajusta el tamaño según sea necesario pdf.image(image_path, 0, 0, 210, 297)
+            pdf.image(image_path, 0, 0, 210, 297)  # Ajusta el tamaño según sea necesario
         else:
-            logging.warning(f'Imagen omitida debido a errores: {image_path}')
+            print(f'Imagen omitida debido a errores: {image_path}')
             os.remove(image_path)
     if capitulo < 10:
         capitulo = f"0{capitulo}"
     pdf_name = f"{anime_name}_capitulo_{capitulo}.pdf".replace(" ", "_")
     pdf_path = os.path.join(ruta_guardado, pdf_name)
     pdf.output(pdf_path)
-    logging.info(f'PDF guardado en: {pdf_path}')
+    print(f'PDF guardado en: {pdf_path}')
     
     # Eliminar las imágenes después de crear el PDF
     if eliminar_imagenes:
@@ -127,24 +116,21 @@ def guardar_url_manga(url, anime_name):
     url_file_path = os.path.join(base_path, "url.txt")
     with open(url_file_path, 'w') as file:
         file.write(url)
-    logging.info(f'URL guardada en: {url_file_path}')
-
+    print(f'URL guardada en: {url_file_path}')
 
 def guardar_url(ruta_carpeta, url):
     """Guarda el URL del manga en un archivo de texto dentro de su carpeta."""
     url_file = os.path.join(ruta_carpeta, "url.txt")
     with open(url_file, "w") as f:
         f.write(url)
-    logging.info(f'URL guardado en: {url_file}')
-
-
+    print(f'URL guardado en: {url_file}')
 
 def combinar_pdfs(ruta_pdfs_combinados, anime_name, start=None, end=None, interval=None):
     pdfs = buscar_pdfs_en_directorios(ruta_pdfs_combinados)
     pdfs.sort()  # Ordenar por nombre, asumiendo que los nombres incluyen números de capítulo
 
     if not pdfs:
-        logging.warning("No se encontraron archivos PDF para combinar.")
+        print("No se encontraron archivos PDF para combinar.")
         return
 
     # Extraer los números de capítulo de los nombres de los archivos PDF
@@ -155,7 +141,7 @@ def combinar_pdfs(ruta_pdfs_combinados, anime_name, start=None, end=None, interv
             chapter_num = float(pdf.split('_capitulo_')[1].split('.pdf')[0])
             pdf_chapters.append((chapter_num, pdf))
         except (IndexError, ValueError) as e:
-            logging.warning(f"El archivo {pdf} no sigue el formato esperado y será omitido. Error: {e}")
+            print(f"El archivo {pdf} no sigue el formato esperado y será omitido. Error: {e}")
             continue
     
     # Ordenar por número de capítulo
@@ -171,13 +157,13 @@ def combinar_pdfs(ruta_pdfs_combinados, anime_name, start=None, end=None, interv
     if interval is None or interval <= 0:
         interval = len(selected_pdfs)  # Combina todos en uno si no se especifica intervalo válido
 
-    logging.info(f'Combinando PDFs desde capítulo {start} hasta {end} con un intervalo de {interval}.')
+    print(f'Combinando PDFs desde capítulo {start} hasta {end} con un intervalo de {interval}.')
 
     for i in range(0, len(selected_pdfs), interval):
         writer = PdfWriter()
         chunk = selected_pdfs[i:i+interval]
 
-        logging.info(f'Combining PDFs: {chunk}')
+        print(f'Combining PDFs: {chunk}')
 
         for pdf_path in chunk:
             with open(pdf_path, 'rb') as f:
@@ -191,7 +177,7 @@ def combinar_pdfs(ruta_pdfs_combinados, anime_name, start=None, end=None, interv
         with open(pdf_combined_path, 'wb') as f:
             writer.write(f)
 
-        logging.info(f'PDF combinado guardado en: {pdf_combined_path}')
+        print(f'PDF combinado guardado en: {pdf_combined_path}')
 
 def leer_url(ruta_carpeta):
     """Lee el URL del manga desde el archivo de texto dentro de su carpeta."""
@@ -201,9 +187,8 @@ def leer_url(ruta_carpeta):
             url = f.read().strip()
         return url
     else:
-        logging.warning(f'No se encontró el archivo con el URL en: {url_file}')
+        print(f'No se encontró el archivo con el URL en: {url_file}')
         return None
-
 
 def mover_pdfs_a_carpeta(ruta_base):
     ruta_pdfs = os.path.join(ruta_base)
@@ -211,11 +196,11 @@ def mover_pdfs_a_carpeta(ruta_base):
     os.makedirs(ruta_pdfs_combinados, exist_ok=True)
 
     pdfs = [f for f in os.listdir(ruta_pdfs) if f.endswith('.pdf')]
-    logging.info(f'PDFs encontrados para mover: {pdfs}')
+    print(f'PDFs encontrados para mover: {pdfs}')
 
     for pdf in pdfs:
         pdf_path = os.path.join(ruta_pdfs, pdf)
-        logging.info(f'Moviendo PDF: {pdf_path} a {ruta_pdfs_combinados}')
+        print(f'Moviendo PDF: {pdf_path} a {ruta_pdfs_combinados}')
         shutil.move(pdf_path, os.path.join(ruta_pdfs_combinados, pdf))
 
     return ruta_pdfs_combinados
@@ -223,7 +208,7 @@ def mover_pdfs_a_carpeta(ruta_base):
 def crear_dataset(url, csv_path, overwrite=False):
     """Crea el dataset CSV desde la URL del manga."""
     if file_exists(csv_path) and not overwrite:
-        logging.info(f'Dataset ya existe: {csv_path}')
+        print(f'Dataset ya existe: {csv_path}')
         return
     else:
         chrome_options = Options()
@@ -281,24 +266,24 @@ def crear_dataset(url, csv_path, overwrite=False):
 
                             url_paginas.append(src)
                         except Exception as e:
-                            logging.error(f"Error al procesar el elemento {idx}: {e}")
+                            print(f"Error al procesar el elemento {idx}: {e}")
 
                     capitulos_complt["capitulo"].append(x)
                     capitulos_complt["paginas"].append(url_paginas)
 
                 except Exception as e:
-                    logging.error(f"Error al procesar la página {x}/{i}: {e}")
+                    print(f"Error al procesar la página {x}/{i}: {e}")
 
             df = pd.DataFrame(capitulos_complt)
             df.to_csv(csv_path, index=False)
-            logging.info(f'Dataset guardado en: {csv_path}')
+            print(f'Dataset guardado en: {csv_path}')
 
         finally:
             driver.quit()
 
 def procesar_dataset(ruta_dataset, anime_name, crear_pdfs=True, eliminar_imagenes=False, descargar_imagenes=True, overwrite=False):
     if not file_exists(ruta_dataset):
-        logging.error(f'No se encontró el dataset: {ruta_dataset}')
+        print(f'No se encontró el dataset: {ruta_dataset}')
         return
 
     df = pd.read_csv(ruta_dataset)
@@ -313,7 +298,7 @@ def procesar_dataset(ruta_dataset, anime_name, crear_pdfs=True, eliminar_imagene
         pdf_path = os.path.join(ruta_pdf, pdf_name)
 
         if file_exists(pdf_path) and not overwrite:
-            logging.info(f'PDF ya existe: {pdf_path}')
+            print(f'PDF ya existe: {pdf_path}')
             continue
 
         os.makedirs(ruta_capitulo, exist_ok=True)
@@ -356,15 +341,13 @@ def procesar_url(url, crear_dataset_var=True, crear_pdfs_var=True, eliminar_imag
         ruta_pdfs_combinados = mover_pdfs_a_carpeta(base_path_pdf_completo)
         combinar_pdfs(ruta_pdfs_combinados, anime_name)
 
-
-
 def run_processes(urls, crear_dataset_var, crear_pdfs_var, eliminar_imagenes_var, combinar_capitulos_var, overwrite_var):
     clean_last_log()
     
     for url in urls:
         procesar_url(url, crear_dataset_var=crear_dataset_var, crear_pdfs_var=crear_pdfs_var, eliminar_imagenes_var=eliminar_imagenes_var, combinar_capitulos_var=combinar_capitulos_var, descargar_imagenes_var=True, overwrite=overwrite_var)
     
-    logging.info("Todos los animes han sido exportados correctamente.")
+    print("Todos los animes han sido exportados correctamente.")
 
 def obtener_mangas_descargados():
     base_dir = os.path.join(os.getcwd(), "mangas")

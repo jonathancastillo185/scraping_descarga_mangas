@@ -1,7 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import scrolledtext, messagebox, Toplevel
-from download import run_processes, obtener_mangas_descargados, obtener_info_manga, clean_last_log, combinar_pdfs, leer_url, guardar_url
+from download import *
 
 # Configuración de estilos
 DARK_BG = "#2b2b2b"
@@ -41,9 +41,11 @@ def mostrar_info_manga(event):
     if seleccion:
         manga_name = lista_mangas.get(seleccion)
         info = obtener_info_manga(manga_name)
+        url_guardada = leer_url(os.path.join(os.getcwd(), "mangas", manga_name))
 
         text_info.delete(1.0, tk.END)
         text_info.insert(tk.END, f"Manga: {manga_name}\n\n")
+        text_info.insert(tk.END, f"URL Guardada: {url_guardada if url_guardada else 'No disponible'}\n\n")
         text_info.insert(tk.END, f"Dataset: {'Sí' if info['dataset'] else 'No'}\n")
         text_info.insert(tk.END, f"Imágenes disponibles para capítulos: {', '.join(map(str, info['imagenes']))}\n")
         text_info.insert(tk.END, f"PDFs por capítulo: {len(info['pdfs'])}\n")
@@ -100,12 +102,23 @@ def abrir_ventana_descarga():
         global cancelar_proceso
         cancelar_proceso = True
         messagebox.showinfo("Proceso Cancelado", "El proceso de descarga ha sido cancelado.")
+    
+    def cargar_url_guardada():
+        seleccion = lista_mangas.curselection()
+        if seleccion:
+            manga_name = lista_mangas.get(seleccion)
+            url_guardada = leer_url(os.path.join(os.getcwd(), "mangas", manga_name))
+            if url_guardada:
+                url_text.delete(1.0, tk.END)
+                url_text.insert(tk.END, url_guardada)
+            else:
+                messagebox.showinfo("Sin URL Guardada", "No se encontró una URL guardada para este manga.")
 
     tk.Label(ventana_descarga, text="URLs del Anime (una por línea):").pack(pady=5)
     url_text = scrolledtext.ScrolledText(ventana_descarga, width=60, height=15)
     url_text.pack(pady=5)
 
-    btn_cargar_url = tk.Button(ventana_descarga, text="Cargar URL del Manga Seleccionado")
+    btn_cargar_url = tk.Button(ventana_descarga, text="Cargar URL Guardada", command=cargar_url_guardada)
     btn_cargar_url.pack(pady=5)
 
     var_crear_dataset = tk.BooleanVar(value=True)
@@ -132,11 +145,9 @@ def run_processes_controlled(urls, crear_dataset_var, crear_pdfs_var, eliminar_i
     
     for url in urls:
         if cancelar_proceso:
-            logging.info("Proceso de descarga cancelado por el usuario.")
             break
         procesar_url_controlled(url, crear_dataset_var, crear_pdfs_var, eliminar_imagenes_var, combinar_capitulos_var, overwrite_var)
 
-    logging.info("Todos los animes han sido exportados correctamente o el proceso fue cancelado.")
 
 def procesar_url_controlled(url, crear_dataset_var, crear_pdfs_var, eliminar_imagenes_var, combinar_capitulos_var, overwrite_var):
     global cancelar_proceso
@@ -148,16 +159,20 @@ def procesar_url_controlled(url, crear_dataset_var, crear_pdfs_var, eliminar_ima
     # Crear las rutas si no existen
     os.makedirs(base_path, exist_ok=True)
     os.makedirs(base_path_pdf_completo, exist_ok=True)
+
+    # Guardar la URL del manga para usos futuros
+    guardar_url(base_path_pdf_completo, url)
     
     if crear_dataset_var and not cancelar_proceso:
-        crear_dataset(url, csv_path, overwrite)
+        crear_dataset(url, csv_path, overwrite_var)
 
     if crear_pdfs_var and not cancelar_proceso:
-        procesar_dataset(csv_path, anime_name, crear_pdfs_var, eliminar_imagenes_var, descargar_imagenes_var=True, overwrite=overwrite_var)
+        procesar_dataset(csv_path, anime_name, crear_pdfs_var, eliminar_imagenes_var, overwrite=overwrite_var)
     
     if combinar_capitulos_var and not cancelar_proceso:
         ruta_pdfs_combinados = mover_pdfs_a_carpeta(base_path_pdf_completo)
         combinar_pdfs(ruta_pdfs_combinados, anime_name)
+
 
 def start_gui():
     root = tk.Tk()
